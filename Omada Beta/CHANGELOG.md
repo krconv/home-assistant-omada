@@ -1,5 +1,10 @@
 # Changelog
 
+
+## 5.13.3 - 2023-08-31
+-Version bump to latest Omada Beta
+
+
 ## 5.9.3 - 2023-08-31
 -Fix for the healthcheck Thanks nathanielks!
 
