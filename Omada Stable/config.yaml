@@ -10,6 +10,11 @@ arch:
   - amd64
 init: false
 url: https://github.com/jkunczik/home-assistant-omada
+map:
+  - ssl
+environment:
+  SSL_CERT: "/ssl/fullchain.pem"
+  SSL_KEY: "/ssl/privkey.pem"
 ports:
     8088/tcp: 8088
     8043/tcp: 8043

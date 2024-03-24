@@ -12,8 +12,8 @@ PORTAL_HTTP_PORT="${PORTAL_HTTP_PORT:-8088}"
 PORTAL_HTTPS_PORT="${PORTAL_HTTPS_PORT:-8843}"
 SHOW_SERVER_LOGS="${SHOW_SERVER_LOGS:-true}"
 SHOW_MONGODB_LOGS="${SHOW_MONGODB_LOGS:-false}"
-SSL_CERT_NAME="${SSL_CERT_NAME:-tls.crt}"
-SSL_KEY_NAME="${SSL_KEY_NAME:-tls.key}"
+SSL_CERT="${SSL_CERT:-tls.crt}"
+SSL_KEY="${SSL_KEY:-tls.key}"
 TLS_1_11_ENABLED="${TLS_1_11_ENABLED:-false}"
 # default /opt/tplink/EAPController
 OMADA_DIR="/opt/tplink/EAPController"
@@ -173,12 +173,9 @@ then
   echo "done"
 fi
 
-# Import a cert from a possibly mounted secret or file at /cert
-if [ -f "/cert/${SSL_KEY_NAME}" ] && [ -f "/cert/${SSL_CERT_NAME}" ]
+# Import a cert from a possibly mounted secret or file
+if [ -f "${SSL_KEY}" ] && [ -f "${SSL_CERT}" ]
 then
-  # see where the keystore directory is; check for old location first
-  if [ -d "${OMADA_DIR}/keystore" ]
-  then
     # keystore directory moved to the data directory in 5.3.1
     KEYSTORE_DIR="${OMADA_DIR}/data/keystore"
 
@@ -189,18 +186,17 @@ then
       mkdir "${KEYSTORE_DIR}"
       echo "INFO: Setting permissions on ${KEYSTORE_DIR}"
       chown omada:omada "${KEYSTORE_DIR}"
-    fi
   fi
 
-  echo "INFO: Importing cert from /cert/tls.[key|crt]"
+  echo "INFO: Importing certificate and key"
   # delete the existing keystore
   rm -f "${KEYSTORE_DIR}/eap.keystore"
 
   # example certbot usage: ./certbot-auto certonly --standalone --preferred-challenges http -d mydomain.net
   openssl pkcs12 -export \
-    -inkey "/cert/${SSL_KEY_NAME}" \
-    -in "/cert/${SSL_CERT_NAME}" \
-    -certfile "/cert/${SSL_CERT_NAME}" \
+    -inkey "${SSL_KEY}" \
+    -in "${SSL_CERT}" \
+    -certfile "${SSL_CERT}" \
     -name eap \
     -out "${KEYSTORE_DIR}/eap.keystore" \
     -passout pass:tplink
