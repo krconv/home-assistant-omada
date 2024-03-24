@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bashio
 
 set -e
 
@@ -19,6 +19,14 @@ TLS_1_11_ENABLED="${TLS_1_11_ENABLED:-false}"
 OMADA_DIR="/opt/tplink/EAPController"
 PUID="${PUID:-508}"
 PGID="${PGID:-508}"
+
+if bashio::config.true 'enable_hass_ssl'; then
+  bashio::log.info "Use SSL from Home Assistant"
+  SSL_CERT=$(bashio::config 'certfile')
+  bashio::log.info "SSL certificate: ${SSL_CERT}"
+  SSL_KEY=$(bashio::config 'keyfile')
+  bashio::log.info "SSL private key: ${SSL_KEY}"
+fi
 
 # validate user/group exist with correct UID/GID
 echo "INFO: Validating user/group (omada:omada) exists with correct UID/GID (${PUID}:${PGID})"
