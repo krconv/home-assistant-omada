@@ -26,6 +26,8 @@ PKGS=(
   openjdk-17-jre-headless
   tzdata
   wget
+  curl
+  jq
 )
 
 case "${ARCH}" in
@@ -49,6 +51,14 @@ echo "**** Install Dependencies ****"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install --no-install-recommends -y "${PKGS[@]}"
+
+BASHIO_VERSION="0.16.2"
+echo "**** Install BashIO ${BASHIO_VERSION}, for parsing HASS AddOn options ****"
+mkdir -p /usr/src/bashio
+curl -L -f -s "https://github.com/hassio-addons/bashio/archive/v${BASHIO_VERSION}.tar.gz" \
+  | tar -xzf - --strip 1 -C /usr/src/bashio
+mv /usr/src/bashio/lib /usr/lib/bashio
+ln -s /usr/lib/bashio/bashio /usr/bin/bashio
 
 echo "**** Download Omada Controller ****"
 cd /tmp
