@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bashio
 
 set -e
 
@@ -12,26 +12,34 @@ PORTAL_HTTP_PORT="${PORTAL_HTTP_PORT:-8088}"
 PORTAL_HTTPS_PORT="${PORTAL_HTTPS_PORT:-8843}"
 SHOW_SERVER_LOGS="${SHOW_SERVER_LOGS:-true}"
 SHOW_MONGODB_LOGS="${SHOW_MONGODB_LOGS:-false}"
-SSL_CERT_NAME="${SSL_CERT_NAME:-tls.crt}"
-SSL_KEY_NAME="${SSL_KEY_NAME:-tls.key}"
+SSL_CERT="${SSL_CERT:-tls.crt}"
+SSL_KEY="${SSL_KEY:-tls.key}"
 TLS_1_11_ENABLED="${TLS_1_11_ENABLED:-false}"
 # default /opt/tplink/EAPController
 OMADA_DIR="/opt/tplink/EAPController"
 PUID="${PUID:-508}"
 PGID="${PGID:-508}"
 
+if bashio::config.true 'enable_hass_ssl'; then
+  bashio::log.info "Use SSL from Home Assistant"
+  SSL_CERT=$(bashio::config 'certfile')
+  bashio::log.info "SSL certificate: ${SSL_CERT}"
+  SSL_KEY=$(bashio::config 'keyfile')
+  bashio::log.info "SSL private key: ${SSL_KEY}"
+fi
+
 # validate user/group exist with correct UID/GID
-echo "INFO: Validating user/group (omada:omada) exists with correct UID/GID (${PUID}:${PGID})"
+bashio::log.info "Validating user/group (omada:omada) exists with correct UID/GID (${PUID}:${PGID})"
 
 # check to see if group exists; if not, create it
 if grep -q -E "^omada:" /etc/group > /dev/null 2>&1
 then
   # exiting group found; also make sure the omada user matches the GID
-  echo "INFO: Group (omada) exists; skipping creation"
+  bashio::log.info "Group (omada) exists; skipping creation"
   EXISTING_GID="$(id -g omada)"
   if [ "${EXISTING_GID}" != "${PGID}" ]
   then
-    echo "ERROR: Group (omada) has an unexpected GID; was expecting '${PGID}' but found '${EXISTING_GID}'!"
+    bashio::log.error "Group (omada) has an unexpected GID; was expecting '${PGID}' but found '${EXISTING_GID}'!"
     exit 1
   fi
 else
@@ -40,11 +48,11 @@ else
   then
     # group ID exists but has a different group name
     EXISTING_GROUP="$(grep ":${PGID}:" /etc/group | awk -F ':' '{print $1}')"
-    echo "INFO: Group (omada) already exists with a different name; renaming '${EXISTING_GROUP}' to 'omada'"
+    bashio::log.info "Group (omada) already exists with a different name; renaming '${EXISTING_GROUP}' to 'omada'"
     groupmod -n omada "${EXISTING_GROUP}"
   else
     # create the group
-    echo "INFO: Group (omada) doesn't exist; creating"
+    bashio::log.info "Group (omada) doesn't exist; creating"
     groupadd -g "${PGID}" omada
   fi
 fi
@@ -56,11 +64,11 @@ chown -R 508:508 "/data"
 if id -u omada > /dev/null 2>&1
 then
   # exiting user found; also make sure the omada user matches the UID
-  echo "INFO: User (omada) exists; skipping creation"
+  bashio::log.info "User (omada) exists; skipping creation"
   EXISTING_UID="$(id -u omada)"
   if [ "${EXISTING_UID}" != "${PUID}" ]
   then
-    echo "ERROR: User (omada) has an unexpected UID; was expecting '${PUID}' but found '${EXISTING_UID}'!"
+    bashio::log.error "User (omada) has an unexpected UID; was expecting '${PUID}' but found '${EXISTING_UID}'!"
     exit 1
   fi
 else
@@ -69,34 +77,34 @@ else
   then
     # user ID exists but has a different user name
     EXISTING_USER="$(grep ":${PUID}:" /etc/passwd | awk -F ':' '{print $1}')"
-    echo "INFO: User (omada) already exists with a different name; renaming '${EXISTING_USER}' to 'omada'"
+    bashio::log.info "User (omada) already exists with a different name; renaming '${EXISTING_USER}' to 'omada'"
     usermod -g "${PGID}" -d "${OMADA_DIR}/data" -l omada -s /bin/sh -c "" "${EXISTING_USER}"
   else
     # create the user
-    echo "INFO: User (omada) doesn't exist; creating"
+    bashio::log.info "User (omada) doesn't exist; creating"
     useradd -u "${PUID}" -g "${PGID}" -d "${OMADA_DIR}/data" -s /bin/sh -c "" omada
   fi
 fi
 
 # set default time zone and notify user of time zone
-echo "INFO: Time zone set to '${TZ}'"
+bashio::log.info "Time zone set to '${TZ}'"
 
 # append smallfiles if set to true
 if [ "${SMALL_FILES}" = "true" ]
 then
-  echo "WARN: smallfiles was passed but is not supported in >= 4.1 with the WiredTiger engine in use by MongoDB"
-  echo "INFO: Skipping setting smallfiles option"
+  bashio::log.warning "smallfiles was passed but is not supported in >= 4.1 with the WiredTiger engine in use by MongoDB"
+  bashio::log.info "Skipping setting smallfiles option"
 fi
 
 set_port_property() {
   # check to see if we are trying to bind to privileged port
   if [ "${3}" -lt "1024" ] && [ "$(cat /proc/sys/net/ipv4/ip_unprivileged_port_start)" = "1024" ]
   then
-    echo "ERROR: Unable to set '${1}' to ${3}; 'ip_unprivileged_port_start' has not been set.  See https://github.com/mbentley/docker-omada-controller#unprivileged-ports"
+    bashio::log.error "Unable to set '${1}' to ${3}; 'ip_unprivileged_port_start' has not been set.  See https://github.com/mbentley/docker-omada-controller#unprivileged-ports"
     exit 1
   fi
 
-  echo "INFO: Setting '${1}' to ${3} in omada.properties"
+  bashio::log.info "Setting '${1}' to ${3} in omada.properties"
   sed -i "s/^${1}=${2}$/${1}=${3}/g" "${OMADA_DIR}/properties/omada.properties"
 }
 
@@ -128,7 +136,7 @@ fi
 if [ ! -d "${OMADA_DIR}/data/html" ] && [ -f "${OMADA_DIR}/data-html.tar.gz" ]
 then
   # missing directory; extract from original
-  echo "INFO: Report HTML directory missing; extracting backup to '${OMADA_DIR}/data/html'"
+  bashio::log.info "Report HTML directory missing; extracting backup to '${OMADA_DIR}/data/html'"
   tar zxvf "${OMADA_DIR}/data-html.tar.gz" -C "${OMADA_DIR}/data"
   chown -R omada:omada "${OMADA_DIR}/data/html"
 fi
@@ -137,7 +145,7 @@ fi
 if [ ! -d "${OMADA_DIR}/data/pdf" ]
 then
   # missing directory; extract from original
-  echo "INFO: Report PDF directory missing; creating '${OMADA_DIR}/data/pdf'"
+  bashio::log.info "Report PDF directory missing; creating '${OMADA_DIR}/data/pdf'"
   mkdir "${OMADA_DIR}/data/pdf"
   chown -R omada:omada "${OMADA_DIR}/data/pdf"
 fi
@@ -151,7 +159,7 @@ do
   if [ "${OWNER}" != "${PUID}" ] || [ "${GROUP}" != "${PGID}" ]
   then
     # notify user that uid:gid are not correct and fix them
-    echo "WARN: Ownership not set correctly on '${OMADA_DIR}/${DIR}'; setting correct ownership (omada:omada)"
+    bashio::log.warning "Ownership not set correctly on '${OMADA_DIR}/${DIR}'; setting correct ownership (omada:omada)"
     chown -R omada:omada "${OMADA_DIR}/${DIR}"
   fi
 done
@@ -160,47 +168,43 @@ done
 TMP_PERMISSIONS="$(stat -c '%a' /tmp)"
 if [ "${TMP_PERMISSIONS}" != "1777" ]
 then
-  echo "WARN: Permissions are not set correctly on '/tmp' (${TMP_PERMISSIONS}); setting correct permissions (1777)"
+  bashio::log.warning "Permissions are not set correctly on '/tmp' (${TMP_PERMISSIONS}); setting correct permissions (1777)"
   chmod -v 1777 /tmp
 fi
 
 # check to see if there is a db directory; create it if it is missing
 if [ ! -d "${OMADA_DIR}/data/db" ]
 then
-  echo "INFO: Database directory missing; creating '${OMADA_DIR}/data/db'"
+  bashio::log.info "Database directory missing; creating '${OMADA_DIR}/data/db'"
   mkdir "${OMADA_DIR}/data/db"
   chown omada:omada "${OMADA_DIR}/data/db"
-  echo "done"
+  bashio::log.info "done"
 fi
 
-# Import a cert from a possibly mounted secret or file at /cert
-if [ -f "/cert/${SSL_KEY_NAME}" ] && [ -f "/cert/${SSL_CERT_NAME}" ]
+# Import a cert from a possibly mounted secret or file
+if [ -f "${SSL_KEY}" ] && [ -f "${SSL_CERT}" ]
 then
-  # see where the keystore directory is; check for old location first
-  if [ -d "${OMADA_DIR}/keystore" ]
-  then
     # keystore directory moved to the data directory in 5.3.1
     KEYSTORE_DIR="${OMADA_DIR}/data/keystore"
 
     # check to see if the KEYSTORE_DIR exists (it won't on upgrade)
     if [ ! -d "${KEYSTORE_DIR}" ]
     then
-      echo "INFO: Creating keystore directory (${KEYSTORE_DIR})"
+      bashio::log.info "Creating keystore directory (${KEYSTORE_DIR})"
       mkdir "${KEYSTORE_DIR}"
-      echo "INFO: Setting permissions on ${KEYSTORE_DIR}"
+      bashio::log.info "Setting permissions on ${KEYSTORE_DIR}"
       chown omada:omada "${KEYSTORE_DIR}"
-    fi
   fi
 
-  echo "INFO: Importing cert from /cert/tls.[key|crt]"
+  bashio::log.info "Importing certificate and key"
   # delete the existing keystore
   rm -f "${KEYSTORE_DIR}/eap.keystore"
 
   # example certbot usage: ./certbot-auto certonly --standalone --preferred-challenges http -d mydomain.net
   openssl pkcs12 -export \
-    -inkey "/cert/${SSL_KEY_NAME}" \
-    -in "/cert/${SSL_CERT_NAME}" \
-    -certfile "/cert/${SSL_CERT_NAME}" \
+    -inkey "${SSL_KEY}" \
+    -in "${SSL_CERT}" \
+    -certfile "${SSL_CERT}" \
     -name eap \
     -out "${KEYSTORE_DIR}/eap.keystore" \
     -passout pass:tplink
@@ -214,14 +218,14 @@ fi
 if [ "${TLS_1_11_ENABLED}" = "true" ]
 then
     # not running openjdk8 or openjdk17
-    echo "WARN: Unable to re-enable TLS 1.0 & 1.1; unable to detect openjdk version"
+    bashio::log.warning "Unable to re-enable TLS 1.0 & 1.1; unable to detect openjdk version"
 fi
 
 # see if any of these files exist; if so, do not start as they are from older versions
 if [ -f "${OMADA_DIR}/data/db/tpeap.0" ] || [ -f "${OMADA_DIR}/data/db/tpeap.1" ] || [ -f "${OMADA_DIR}/data/db/tpeap.ns" ]
 then
-  echo "ERROR: The data volume mounted to ${OMADA_DIR}/data appears to have data from a previous version!"
-  echo "  Follow the upgrade instructions at https://github.com/mbentley/docker-omada-controller#upgrading-to-41"
+  bashio::log.error "The data volume mounted to ${OMADA_DIR}/data appears to have data from a previous version!"
+  bashio::log.error "  Follow the upgrade instructions at https://github.com/mbentley/docker-omada-controller#upgrading-to-41"
   exit 1
 fi
 
@@ -236,7 +240,7 @@ else
 fi
 
 
-echo "INFO: Starting Omada Controller as user omada"
+bashio::log.info "Starting Omada Controller as user omada"
 
 # tail the omada logs if set to true
 if [ "${SHOW_SERVER_LOGS}" = "true" ]

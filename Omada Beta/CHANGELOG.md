@@ -1,9 +1,11 @@
 # Changelog
 
+## 5.13.30 - 2023-03-27
+
+- Support for using the SSL certificate from Home Assistant in Omada
 
 ## 5.13.3 - 2023-08-31
--Version bump to latest Omada Beta
-
+- Version bump to latest Omada Beta
 
 ## 5.9.3 - 2023-08-31
 -Fix for the healthcheck Thanks nathanielks!
