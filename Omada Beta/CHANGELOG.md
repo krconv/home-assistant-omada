@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.13.300 - 2023-03-28
+
+- Clean up Dockerfile and scripts
+- Fix to make log files persistent
+
 ## 5.13.30 - 2023-03-27
 
 - Support for using the SSL certificate from Home Assistant in Omada
