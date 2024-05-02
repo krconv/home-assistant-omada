@@ -6,7 +6,7 @@ OMADA_DIR="/opt/tplink/EAPController"
 ARCH="${ARCH:-}"
 OMADA_VER="${OMADA_VER:-}"
 OMADA_TAR="${OMADA_TAR:-}"
-OMADA_URL="https://static.tp-link.com/upload/beta/2023/202310/20231027/Omada_SDN_Controller_v5.13.10_Linux_x64.tar.gz(Beta).gz"
+OMADA_URL="https://static.tp-link.com/upload/software/2024/202402/20240227/Omada_SDN_Controller_v5.13.30.8_linux_x64.tar.gz"
 OMADA_MAJOR_VER="$(echo "${OMADA_VER}" | awk -F '.' '{print $1}')"
 
 
@@ -33,9 +33,6 @@ PKGS=(
 case "${ARCH}" in
 amd64|arm64|aarch64|"")
   PKGS+=( mongodb-server-core )
-  ;;
-armv7l)
-  PKGS+=( mongodb )
   ;;
 *)
   die "${ARCH}: unsupported ARCH"
@@ -96,8 +93,7 @@ echo "${OMADA_VER}" > "${OMADA_DIR}/IMAGE_OMADA_VER.txt"
 echo "**** Setup omada User Account ****"
 groupadd -g 508 omada
 useradd -u 508 -g 508 -d "${OMADA_DIR}" omada
-mkdir "${OMADA_DIR}/logs" "${OMADA_DIR}/work"
-chown -R omada:omada "${OMADA_DIR}/data" "${OMADA_DIR}/logs" "${OMADA_DIR}/work"
+chown -R omada:omada "${OMADA_DIR}/data"
 
 
 echo "**** Cleanup ****"
