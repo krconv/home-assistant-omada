@@ -1,6 +1,7 @@
 ---
 name: Omada Controller Beta
-version: 5.13.300
+image: dratrav/home-assistant-omada-beta
+version: 5.13.350
 slug: omada_controller
 description: TP-Link Omada Controller software
 webui: https://[HOST]:[PORT:8043]
