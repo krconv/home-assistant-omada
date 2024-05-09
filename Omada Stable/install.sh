@@ -46,7 +46,7 @@ echo "OMADA_URL=${OMADA_URL}"
 
 echo "**** Install Dependencies ****"
 export DEBIAN_FRONTEND=noninteractive
-apt-get update
+apt-get update --fix-missing
 apt-get install --no-install-recommends -y "${PKGS[@]}"
 
 BASHIO_VERSION="0.16.2"
