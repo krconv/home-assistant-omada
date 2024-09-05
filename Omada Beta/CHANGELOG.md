@@ -34,3 +34,7 @@
 ## 5.14.1 - 2024-01-15
 ### Changed
 - Updated to the upstream version 5.14
+
+## 5.14.7 - 2024-09-5
+### Changed
+- Updated to the upstream version 5.14.30.7
