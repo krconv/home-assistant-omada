@@ -38,3 +38,9 @@
 ## 5.14.7 - 2024-09-5
 ### Changed
 - Updated to the upstream version 5.14.30.7
+
+## 5.15.14.32.2 - 2024-09-5
+### Changed
+- Updated to the upstream version 5.14.32.2
+- fully merged all files (`install.sh`, `entrypoint.sh`, `Dockerfile`)
+- only storing essential data (`data` and `lgos`) in the persistent `/data` volume

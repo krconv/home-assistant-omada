@@ -31,6 +31,16 @@ Set `Enable Home Assistant SSL` to `true`, and enter the full path for:
 
 The default paths are compatible with the `Letsencrypt` Add-On.
 
+## Update to a new version
+
+To update the controller to a new version, the changes of Matt Bentleys docker-omada-controller are manually merged into `Omada Beta`. The following steps have to be done:
+- 1. Move the current configuration of `Omada Beta` to `Omda Stable`
+- 2. make sure that there are no changes in the Dockerfile
+- 3. If there are changes in install.sh, copy it over, while keeping the Home Assistant specific processing steps in the bottom of the file. Add `aarch64` to the supported mongod architectures (`case "${ARCH}" in amd64|arm64|aarch64|"")`)
+- 4. If there are changes in entrypoint.sh, replace the old contents with the new, keeping the Home Assistant specific steps in the top of the file. Also, change the `echo` to proper `bashio::log` statements as described in the file.
+- 5. Build the addon locally by commenting out `image: dratrav/home-assistant-omada-beta` in `config.yaml`
+- 6. If everything worked as expected, ask DraTrav to build and push the image to the Docker repository and to merge it into main
+
 ## Contribution
 
 This add-on is a fork of Matt Bentleys [docker-omada-cotroller](https://github.com/mbentley/docker-omada-controller) and jkunczik [home-assistant-omada](https://github.com/jkunczik/home-assistant-omada) would not have been possible without thier excellent work. Other than in the original docker omada controller, this add-on stores all persistent data in the /data directory, so that it is compatible with Home assistant. This Add-On would not be possible without the effort of other people. Pull requests for version

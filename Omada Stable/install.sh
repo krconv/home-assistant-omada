@@ -6,7 +6,7 @@ OMADA_DIR="/opt/tplink/EAPController"
 ARCH="${ARCH:-}"
 OMADA_VER="${OMADA_VER:-}"
 OMADA_TAR="${OMADA_TAR:-}"
-OMADA_URL="https://static.tp-link.com/upload/software/2024/202402/20240227/Omada_SDN_Controller_v5.13.30.8_linux_x64.tar.gz"
+OMADA_URL="https://static.tp-link.com/upload/beta/2024/202407/20240726/Omada_Controller_Linux_5.14.30.7_tar(Pre-release).zip"
 OMADA_MAJOR_VER="$(echo "${OMADA_VER}" | awk -F '.' '{print $1}')"
 
 
@@ -22,6 +22,7 @@ die() { echo -e "$@" 2>&1; exit 1; }
 # common package dependencies
 PKGS=(
   gosu
+  unzip
   net-tools
   openjdk-17-jre-headless
   tzdata
@@ -60,6 +61,19 @@ ln -s /usr/lib/bashio/bashio /usr/bin/bashio
 echo "**** Download Omada Controller ****"
 cd /tmp
 wget -nv "${OMADA_URL}"
+
+
+echo "**** Check if zip and extract ****"
+if [[ $OMADA_TAR =~ \.zip$ ]]; then
+	unzip "${OMADA_TAR}"
+	cd "$(ls -t1 -d Omada*/ | head -n1)"
+    echo "$(ls -t1 [Release]* | tail -n1)"
+    OMADA_TAR="$(ls -t1 * | tail -n1)"
+    echo "$OMADA_TAR"
+else
+	echo "File is not a zip"
+fi
+
 
 echo "**** Extract and Install Omada Controller ****"
 tar zxvf "${OMADA_TAR}"

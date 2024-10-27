@@ -1,16 +1,20 @@
 # Changelog
 
-## 5.13.3 - 2024-03-27
+## 5.13.300 - 2023-03-28
 
-- Updated to 5.13.30 image
+- Clean up Dockerfile and scripts
 - Fix to make log files persistent
 
-## 5.13.1 - 2024-03-27
+## 5.13.30 - 2023-03-27
 
 - Support for using the SSL certificate from Home Assistant in Omada
 
+## 5.13.3 - 2023-08-31
+- Version bump to latest Omada Beta
+
 ## 5.9.3 - 2023-08-31
-- Fix for the healthcheck Thanks nathanielks!
+-Fix for the healthcheck Thanks nathanielks!
+
 
 ## 5.9.2 - 2023-04-3
 ### Added
@@ -19,4 +23,18 @@
 
 ## 5.9.1 - 2023-03-11
 ### Added
-- Support for AMD64 platforms.
+- Experimental support for AMD64 platforms.
+
+
+## 5.13.1 - 2024-01-15
+### Changed
+- Updated to the upstream version 5.13
+
+
+## 5.14.1 - 2024-01-15
+### Changed
+- Updated to the upstream version 5.14
+
+## 5.14.7 - 2024-09-5
+### Changed
+- Updated to the upstream version 5.14.30.7
