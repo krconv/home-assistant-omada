@@ -1,6 +1,6 @@
 ---
 name: Omada Controller Stable
-image: dratrav/home-assistant-omada-stable
+image: dratrav/home-assistant-omada-beta
 version: 5.14.7
 slug: omada_controller_stable
 description: TP-Link Omada Controller software
