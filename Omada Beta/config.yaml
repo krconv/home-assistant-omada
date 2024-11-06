@@ -12,7 +12,7 @@ arch:
 init: false
 url: https://github.com/jkunczik/home-assistant-omada
 ingress: true
-ingress_port: 8043
+ingress_port: 8088
 map:
   - ssl
 options:
