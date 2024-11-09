@@ -4,13 +4,14 @@ image: dratrav/home-assistant-omada-stable
 version: 5.14.7
 slug: omada_controller_stable
 description: TP-Link Omada Controller software
-webui: https://[HOST]:[PORT:8043]
 startup: application
 arch:
   - aarch64
   - amd64
 init: false
 url: https://github.com/jkunczik/home-assistant-omada
+ingress: true
+ingress_port: 8088
 map:
   - ssl
 options:
